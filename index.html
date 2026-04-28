@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Семинар | Регистрация участников</title>
+    <style>
+        /* Базовые переменные (SaaS стиль) */
+        :root {
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --success: #22C55E;
+            --success-hover: #16a34a;
+            --bg: #F9FAFB;
+            --card-bg: #FFFFFF;
+            --text-main: #111827;
+            --text-muted: #6B7280;
+            --border: #E5E7EB;
+            --radius: 16px;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Общие стили */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: var(--bg); color: var(--text-main); line-height: 1.5; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        /* Утилиты */
+        .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Контейнеры и Карточки */
+        .container { max-width: 1000px; margin: 0 auto; padding: 2rem; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; }
+        .card { background: var(--card-bg); border-radius: var(--radius); padding: 2.5rem; box-shadow: var(--shadow); width: 100%; max-width: 450px; text-align: center; }
+        .card-admin { max-width: 900px; padding: 2rem; }
+
+        /* Типографика */
+        h1 { font-size: 2.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+        h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; }
+        p { color: var(--text-muted); margin-bottom: 2rem; font-size: 1.1rem; }
+        .label { display: block; text-align: left; font-size: 0.9rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-main); }
+
+        /* Элементы форм */
+        .input-group { margin-bottom: 1.5rem; text-align: left; }
+        input[type="text"], input[type="password"] { width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 12px; font-size: 1rem; transition: var(--transition); background: var(--bg); }
+        input[type="text"]:focus, input[type="password"]:focus { outline: none; border-color: var(--primary); background: var(--card-bg); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
+        
+        /* Кнопки */
+        .btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 0.875rem 1.5rem; font-size: 1rem; font-weight: 600; border: none; border-radius: 12px; cursor: pointer; transition: var(--transition); color: white; background: var(--primary); background-image: linear-gradient(135deg, var(--primary), #6366f1); box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2); }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px -2px rgba(79, 70, 229, 0.3); }
+        .btn-success { background: var(--success); background-image: none; box-shadow: 0 4px 6px -1px rgba(34, 197, 94, 0.2); }
+        .btn-success:hover { background: var(--success-hover); box-shadow: 0 6px 15px -2px rgba(34, 197, 94, 0.3); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); box-shadow: none; width: auto; }
+        .btn-outline:hover { background: var(--bg); transform: none; box-shadow: none; }
+
+        /* Админ-панель */
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+        .stats { background: var(--bg); padding: 0.5rem 1rem; border-radius: 12px; font-weight: 600; color: var(--primary); }
+        .table-container { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: var(--bg); padding: 1rem; font-weight: 600; color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; user-select: none; border-bottom: 1px solid var(--border); }
+        th:hover { background: #f3f4f6; }
+        td { padding: 1rem; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background: var(--bg); }
+        
+        /* Чекбоксы */
+        .custom-checkbox { width: 1.25rem; height: 1.25rem; accent-color: var(--success); cursor: pointer; }
+
+        /* Всплывающее окно (Модалка) */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(17, 24, 39, 0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 50; }
+        .icon-check { width: 64px; height: 64px; background: #dcfce7; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; color: var(--success); }
+        .icon-check svg { width: 32px; height: 32px; }
+
+        /* Адаптивность */
+        @media (max-width: 600px) {
+            .container { padding: 1rem; }
+            h1 { font-size: 2rem; }
+            .card { padding: 1.5rem; }
+            .admin-header { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+
+    <main id="view-home" class="container fade-in">
+        <div style="text-align: center;">
+            <h1>Семинар</h1>
+            <p>Регистрация участников</p>
+            <div class="stats" style="display: inline-block; margin-bottom: 2rem;">
+                Уже зарегистрировано: <span id="public-counter">0</span>
+            </div>
+            <br>
+            <button class="btn" style="max-width: 250px;" onclick="showView('view-form')">Зарегистрироваться</button>
+        </div>
+    </main>
+
+    <section id="view-form" class="container hidden fade-in">
+        <div class="card">
+            <h2>Регистрация</h2>
+            <form id="regForm" onsubmit="handleRegister(event)">
+                <div class="input-group">
+                    <label class="label" for="fio">ФИО</label>
+                    <input type="text" id="fio" placeholder="Иванов Иван Иванович" required>
+                </div>
+                <div class="input-group">
+                    <label class="label" for="school">Школа / Учебное заведение</label>
+                    <input type="text" id="school" placeholder="Введите номер или название школы" required>
+                </div>
+                <button type="submit" class="btn">Отправить</button>
+            </form>
+            <button class="btn btn-outline" style="margin-top: 1rem;" onclick="showView('view-home')">Назад</button>
+        </div>
+    </section>
+
+    <section id="view-admin-auth" class="container hidden fade-in">
+        <div class="card">
+            <h2>Админ-панель</h2>
+            <p style="font-size: 0.9rem;">Введите код доступа для управления участниками</p>
+            <form onsubmit="handleLogin(event)">
+                <div class="input-group">
+                    <input type="password" id="admin-password" placeholder="Пароль" required>
+                </div>
+                <button type="submit" class="btn">Войти</button>
+            </form>
+        </div>
+    </section>
+
+    <section id="view-admin-dashboard" class="container hidden fade-in" style="max-width: 1200px;">
+        <div class="card card-admin">
+            <div class="admin-header">
+                <h2>Список участников</h2>
+                <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                    <div class="stats">Всего: <span id="admin-counter">0</span> | Присутствуют: <span id="attend-counter">0</span></div>
+                    <button class="btn btn-outline" onclick="exportToCSV()">Экспорт в CSV</button>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <input type="text" id="searchInput" placeholder="🔍 Поиск по ФИО..." oninput="renderTable()">
+            </div>
+
+            <div class="table-container">
+                <table id="participantsTable">
+                    <thead>
+                        <tr>
+                            <th onclick="toggleSort('fio')">ФИО <span id="sort-fio"></span></th>
+                            <th onclick="toggleSort('school')">Школа <span id="sort-school"></span></th>
+                            <th>Присутствует</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <div id="successModal" class="modal-overlay hidden fade-in">
+        <div class="card" style="padding: 3rem 2rem;">
+            <div class="icon-check">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h2>Вы успешно зарегистрированы!</h2>
+            <p style="margin-bottom: 2rem;">Ждём вас на семинаре.</p>
+            <button class="btn btn-success" onclick="closeModal()">ОК</button>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация базы данных в localStorage
+        const DB_KEY = 'seminar_db';
+        let participants = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+        
+        // Настройки админ-панели
+        const ADMIN_PASSWORD = '4444';
+        let isAuthenticated = false;
+        let currentSort = { column: 'fio', direction: 'asc' };
+
+        // --- РОУТИНГ И НАВИГАЦИЯ ---
+        function handleRoute() {
+            const hash = window.location.hash;
+            document.querySelectorAll('main, section').forEach(el => el.classList.add('hidden'));
+            
+            if (hash === '#admin') {
+                if (isAuthenticated) {
+                    document.getElementById('view-admin-dashboard').classList.remove('hidden');
+                    renderTable();
+                } else {
+                    document.getElementById('view-admin-auth').classList.remove('hidden');
+                }
+            } else {
+                document.getElementById('view-home').classList.remove('hidden');
+                document.getElementById('public-counter').innerText = participants.length;
+            }
+        }
+        window.addEventListener('hashchange', handleRoute);
+        window.addEventListener('DOMContentLoaded', handleRoute);
+
+        function showView(viewId) {
+            document.querySelectorAll('main, section').forEach(el => el.classList.add('hidden'));
+            document.getElementById(viewId).classList.remove('hidden');
+        }
+
+        // --- РЕГИСТРАЦИЯ ---
+        function handleRegister(e) {
+            e.preventDefault();
+            const fio = document.getElementById('fio').value.trim();
+            const school = document.getElementById('school').value.trim();
+
+            if (fio && school) {
+                const newParticipant = {
+                    id: Date.now(),
+                    fio: fio,
+                    school: school,
+                    attended: false
+                };
+                
+                participants.push(newParticipant);
+                saveData();
+                
+                // Очистка формы и показ модалки
+                document.getElementById('regForm').reset();
+                document.getElementById('successModal').classList.remove('hidden');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('successModal').classList.add('hidden');
+            window.location.hash = ''; 
+            handleRoute(); // Возврат на главную
+        }
+
+        // --- АДМИН-ПАНЕЛЬ ---
+        function handleLogin(e) {
+            e.preventDefault();
+            const pwd = document.getElementById('admin-password').value;
+            if (pwd === ADMIN_PASSWORD) {
+                isAuthenticated = true;
+                document.getElementById('admin-password').value = '';
+                handleRoute();
+            } else {
+                alert('Неверный пароль!');
+            }
+        }
+
+        function toggleSort(column) {
+            if (currentSort.column === column) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = column;
+                currentSort.direction = 'asc';
+            }
+            renderTable();
+        }
+
+        function updateAttendance(id, isChecked) {
+            const index = participants.findIndex(p => p.id === id);
+            if (index !== -1) {
+                participants[index].attended = isChecked;
+                saveData();
+                updateCounters();
+            }
+        }
+
+        function renderTable() {
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            const tbody = document.getElementById('tableBody');
+            
+            // Сброс иконок сортировки
+            document.getElementById('sort-fio').innerText = currentSort.column === 'fio' ? (currentSort.direction === 'asc' ? '↑' : '↓') : '';
+            document.getElementById('sort-school').innerText = currentSort.column === 'school' ? (currentSort.direction === 'asc' ? '↑' : '↓') : '';
+
+            // Фильтрация
+            let filtered = participants.filter(p => p.fio.toLowerCase().includes(searchQuery));
+
+            // Сортировка
+            filtered.sort((a, b) => {
+                let valA = a[currentSort.column].toLowerCase();
+                let valB = b[currentSort.column].toLowerCase();
+                if (valA < valB) return currentSort.direction === 'asc' ? -1 : 1;
+                if (valA > valB) return currentSort.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            // Рендер
+            tbody.innerHTML = '';
+            filtered.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight: 500; color: var(--text-main);">${p.fio}</td>
+                    <td>${p.school}</td>
+                    <td>
+                        <input type="checkbox" class="custom-checkbox" 
+                            ${p.attended ? 'checked' : ''} 
+                            onchange="updateAttendance(${p.id}, this.checked)">
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            updateCounters();
+        }
+
+        function updateCounters() {
+            document.getElementById('admin-counter').innerText = participants.length;
+            const attendedCount = participants.filter(p => p.attended).length;
+            document.getElementById('attend-counter').innerText = attendedCount;
+        }
+
+        function saveData() {
+            localStorage.setItem(DB_KEY, JSON.stringify(participants));
+        }
+
+        // --- ЭКСПОРТ В CSV ---
+        function exportToCSV() {
+            if (participants.length === 0) {
+                alert('Нет данных для экспорта');
+                return;
+            }
+            
+            // Добавляем BOM для корректного отображения кириллицы в Excel
+            let csvContent = '\uFEFF'; 
+            csvContent += "ФИО;Школа;Присутствует\n";
+
+            participants.forEach(p => {
+                const attendedText = p.attended ? "Да" : "Нет";
+                // Экранируем кавычки и используем точку с запятой как разделитель (стандарт для русского Excel)
+                const fio = `"${p.fio.replace(/"/g, '""')}"`;
+                const school = `"${p.school.replace(/"/g, '""')}"`;
+                csvContent += `${fio};${school};${attendedText}\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', 'Участники_Семинара.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
